@@ -279,15 +279,15 @@ def one_hot_encoding(training_set, testing_set):
                 training_encoded.loc[training_encoded[column] == 1, dummy_col] = np.nan
             training_encoded.drop(column, axis=1, inplace=True)
 
+    # Final columns after encoding
+    final_columns = training_encoded.columns
+
     # Apply the same One-Hot Encoding to the testing_set
     testing_encoded = pd.get_dummies(testing_set, drop_first=False, dummy_na=True, dtype=float)
 
     # Ensure that the testing_set has the same columns as the training_set
     # Align the columns of testing_encoded to those of training_encoded
     testing_encoded = testing_encoded.reindex(columns=final_columns, fill_value=0)
-
-    # Final columns after encoding
-    final_columns = training_encoded.columns
 
     # New categorical columns
     new_categorical_columns = list(set(final_columns) - set(ordinal_columns))
@@ -494,7 +494,6 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
     columns_to_normalise = physical_ordinal_properties_columns + sulphur_and_phosphorus_columns + other_concentration_columns
     training_set_normalised, testing_set_normalised = scaler(training_set, testing_set, columns_to_normalise, strategy=scaler_strategy)
 
-
     # Dimension reduction
     if pca_columns == 'concentration':
         pca_columns_list = sulphur_and_phosphorus_columns + other_concentration_columns
@@ -506,6 +505,9 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
         other_columns = categorical_columns
         pca_data_training = training_set_normalised[pca_columns_list]
         pca_data_testing = testing_set_normalised[pca_columns_list]
+    
+    training_set_processed = training_set_normalised
+    testing_set_processed = testing_set_normalised
 
     if is_PCA:
         # Call the PCA function with both training and testing datasets
