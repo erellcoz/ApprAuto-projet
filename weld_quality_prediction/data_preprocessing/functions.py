@@ -279,15 +279,15 @@ def one_hot_encoding(training_set, testing_set):
                 training_encoded.loc[training_encoded[column] == 1, dummy_col] = np.nan
             training_encoded.drop(column, axis=1, inplace=True)
 
+    # Final columns after encoding
+    final_columns = training_encoded.columns
+
     # Apply the same One-Hot Encoding to the testing_set
     testing_encoded = pd.get_dummies(testing_set, drop_first=False, dummy_na=True, dtype=float)
 
     # Ensure that the testing_set has the same columns as the training_set
     # Align the columns of testing_encoded to those of training_encoded
     testing_encoded = testing_encoded.reindex(columns=final_columns, fill_value=0)
-
-    # Final columns after encoding
-    final_columns = training_encoded.columns
 
     # New categorical columns
     new_categorical_columns = list(set(final_columns) - set(ordinal_columns))
@@ -421,7 +421,40 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
                           testing_labels : pd.DataFrame, labels_chosen : list[str], is_PCA: bool, pca_percent_explained_variance: float, 
                           ordinal_strategy: OrdinalStrategies, categorical_strategy: CategoricalStrategies, scaler_strategy: ScalerStrategy,
                           pca_columns: PcaColumns, less_than_strategy: LessThanList):
-    
+    """
+    Preprocess the training set and labels for the weld quality prediction model.
+    The function performs the following steps:
+    - Process string values in the dataset
+    - Convert string values to numeric values
+    - Impute missing values in the dataset
+    - Perform one-hot encoding on the categorical columns
+    - Handles missing values
+    - Handle incompatibility concerning the imputation of some categorical values
+    - Drop one column for each categorical feature to avoid multicollinearity
+    - Normalise the data
+    - Perform PCA on the dataset if specified
+    - Return the processed training set and labels
+
+    Args:
+        training_set (pd.DataFrame): The training set data
+        training_labels (pd.DataFrame): The training labels data
+        testing_set (pd.DataFrame): The testing set data
+        testing_labels (pd.DataFrame): The testing labels data
+        labels_chosen (list[str]): The list of labels chosen for the model
+        is_PCA (bool): A boolean value to indicate if PCA should be performed
+        pca_percent_explained_variance (float): The percentage of variance to be explained by PCA
+        ordinal_strategy (OrdinalStrategies): The strategy to handle missing ordinal values
+        categorical_strategy (CategoricalStrategies): The strategy to handle missing categorical values
+        scaler_strategy (ScalerStrategy): The strategy to scale the data
+        pca_columns (PcaColumns): The columns to be used for PCA
+        less_than_strategy (LessThanList): The strategy to handle values that are less than a certain threshold
+
+    Returns:
+        The processed training set 
+        The processed testing set
+        The training labels
+        The testing labels
+    """
 
     # Structural errors
     training_set, training_labels = process_string_values(inputs=training_set, outputs=training_labels, labels_chosen=labels_chosen, 
@@ -461,7 +494,6 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
     columns_to_normalise = physical_ordinal_properties_columns + sulphur_and_phosphorus_columns + other_concentration_columns
     training_set_normalised, testing_set_normalised = scaler(training_set, testing_set, columns_to_normalise, strategy=scaler_strategy)
 
-
     # Dimension reduction
     if pca_columns == 'concentration':
         pca_columns_list = sulphur_and_phosphorus_columns + other_concentration_columns
@@ -473,6 +505,9 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
         other_columns = categorical_columns
         pca_data_training = training_set_normalised[pca_columns_list]
         pca_data_testing = testing_set_normalised[pca_columns_list]
+    
+    training_set_processed = training_set_normalised
+    testing_set_processed = testing_set_normalised
 
     if is_PCA:
         # Call the PCA function with both training and testing datasets
