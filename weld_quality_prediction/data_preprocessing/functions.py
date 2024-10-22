@@ -464,6 +464,8 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels : pd.Da
 
     training_set = convert_to_numeric_values(training_set)
     testing_set = convert_to_numeric_values(testing_set)
+    training_labels = convert_to_numeric_values(training_labels)
+    testing_labels = convert_to_numeric_values(testing_labels)
 
 
     # Missing values
