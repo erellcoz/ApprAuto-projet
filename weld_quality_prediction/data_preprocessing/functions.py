@@ -145,7 +145,7 @@ def replace_less_than_values(*, df, column, strategy: Literal['max', 'mean']):
     if df[column].any() and type(df[column].dropna().iloc[0]) == str:
         new_column = column + '_<'  # Create a new column name
         # Create a new column to store the boolean values
-        df = df.copy()  # To prevent data copy warning
+        df = df.copy()  # To prevent data copy
         df.loc[:, new_column] = np.nan
 
         # Apply the transformation using .loc to avoid SettingWithCopyWarning
@@ -501,6 +501,9 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels: pd.Dat
 
     training_set = convert_to_numeric_values(training_set)
     testing_set = convert_to_numeric_values(testing_set)
+
+    training_labels = training_labels.astype(float)
+    testing_labels = testing_labels.astype(float)
 
     # Missing values
     # Transform concentrations accordingly to
