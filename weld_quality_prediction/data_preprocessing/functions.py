@@ -286,7 +286,7 @@ def one_hot_encoding(training_set, testing_set):
 
     # One Hot Encoding on the training_set without dummy_na
     training_encoded = pd.get_dummies(
-        training_set, drop_first=False, dummy_na=True, dtype=float)
+        training_set, drop_first=True, dummy_na=True, dtype=float)
 
     # Get the final columns of the training_set
     final_columns = training_encoded.columns
@@ -350,6 +350,15 @@ def missing_values_physical_properties(train_data, test_data, ordinal_strategy, 
 
 # After the one hot encoding and the imputation, we need to be sure that the data that has been imputed respects the incompatibility rule (either AC or DC etc...)
 def handle_incompatibility_categorical_features(df, incompatible_features_list):
+
+    # We adapt the list of incompatible features on the label we chose
+    for i in range(len(incompatible_features_list)):
+        feature = incompatible_features_list[i]  # Accéder à la sous-liste
+        # Créer une nouvelle liste pour les éléments valides
+        new_feature = [
+            feature_encoded for feature_encoded in feature if feature_encoded in df.columns]
+        # Remplacer l'ancienne sous-liste par la nouvelle
+        incompatible_features_list[i] = new_feature
 
     for incompatible_features in incompatible_features_list:
         # Check the rows where all specified columns are equal to zero
@@ -438,10 +447,6 @@ def compute_pca(train_df, test_df, pca_percent_explained_variance):
                                                f'PC{i+1}' for i in range(n_components)],
                                            index=test_df.index)  # Preserve original index
 
-    # Print results
-    # print(f"Number of components chosen by PCA: {n_components}")
-    # print(f"Explained Variance Ratio: {explained_variance_ratio}")
-
     return train_concentration_data, test_concentration_data
 
 
@@ -526,15 +531,6 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels: pd.Dat
         training_set, incompatible_features_list)
     testing_set = handle_incompatibility_categorical_features(
         testing_set, incompatible_features_list)
-
-    # Drop one column for each categorical feature to avoid multicollinearity. Drop the less frequent column
-    columns_to_drop = ['AC_or_DC_AC',
-                       'Electrode_positive_or_negative_0', 'Type_of_weld_NGGMA']
-    categorical_columns = [
-        col for col in categorical_columns if col not in columns_to_drop]
-    training_set = training_set.drop(columns=columns_to_drop)
-    testing_set = testing_set.drop(columns=columns_to_drop)
-    pd.get_dummies
 
     # Normalisation
     columns_to_normalise = physical_ordinal_properties_columns + \
