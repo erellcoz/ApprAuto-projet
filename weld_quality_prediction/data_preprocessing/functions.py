@@ -506,6 +506,8 @@ def pipeline_training_set(*, training_set: pd.DataFrame, training_labels: pd.Dat
 
     training_set = convert_to_numeric_values(training_set)
     testing_set = convert_to_numeric_values(testing_set)
+    training_labels = convert_to_numeric_values(training_labels)
+    testing_labels = convert_to_numeric_values(testing_labels)
 
     training_labels = training_labels.astype(float)
     testing_labels = testing_labels.astype(float)
