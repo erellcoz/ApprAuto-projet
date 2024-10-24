@@ -2,9 +2,6 @@
 
 ## Project Structure
 
-### data
-- This folder contains the dataset used for training and testing the models.
-
 ### data_preprocessing
 - **functions.py**: This file includes functions used for preprocessing the data, formatted for module exportation.
 - **preprocessing_copy.ipynb**: This Jupyter Notebook is used for the preprocessing of the data, including data cleaning, transformation, and preparation steps.
